@@ -18,69 +18,123 @@ const db = new sql3.Database(
 db.serialize(() => {
     db.run('PRAGMA foreign_keys = ON');
 
-    db.run(`
-      CREATE TABLE IF NOT EXISTS Website (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        logo TEXT,
-        logoShort TEXT
-      )
-    `);
+    // db.run(`
+    //   CREATE TABLE IF NOT EXISTS Website (
+    //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    //     title TEXT NOT NULL,
+    //     description TEXT,
+    //     categoryId, price, photos, state, created_at, sold_at, platform TEXT
+    //   )
+    // `);
 
-    db.run(`
-      CREATE TABLE IF NOT EXISTS Category (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        banner TEXT,
-        subCategory TEXT
-      )
-    `);
+    // db.run(`
+    //   CREATE TABLE IF NOT EXISTS Category (
+    //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    //     title TEXT NOT NULL,
+    //     description TEXT,
+    //     categoryId, price, photos, state, created_at, sold_at, platform TEXT
+    //   )
+    // `);
 
-    db.run(`
-      CREATE TABLE IF NOT EXISTS Article (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        description TEXT,
-        categoryId INTEGER,
-        price INTEGER,
-        photos INTEGER,
-        state TEXT CHECK(state IN ('stock', 'online', 'sold')) NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        sold_at DATETIME,
-        platform TEXT,
-        FOREIGN KEY (categoryId) REFERENCES Category(id)
-      )
-    `);
+    // db.run(`
+    //   CREATE TABLE IF NOT EXISTS Article (
+    //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    //     title TEXT NOT NULL,
+    //     description TEXT,
+    //     categoryId INTEGER,
+    //     price INTEGER,
+    //     photos INTEGER,
+    //     state TEXT CHECK(state IN ('stock', 'online', 'sold')) NOT NULL,
+    //     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    //     sold_at DATETIME,
+    //     platform INTEGER,
+    //     FOREIGN KEY (categoryId) REFERENCES Category(id),
+    //     FOREIGN KEY (platform) REFERENCES Website(id)
+    //   )
+    // `);
 
-    db.run(`
-        CREATE TABLE IF NOT EXISTS AvailableOn (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          articleId INTEGER NOT NULL,
-          websiteId INTEGER NOT NULL,
-          link TEXT,
-          FOREIGN KEY(articleId) REFERENCES Article(id),
-          FOREIGN KEY(websiteId) REFERENCES Website(id)
-        )
-    `);
+    // db.run(`
+    //     CREATE TABLE IF NOT EXISTS AvailableOn (
+    //       id INTEGER PRIMARY KEY AUTOINCREMENT,
+    //       articleId INTEGER NOT NULL,
+    //       websiteId INTEGER NOT NULL,
+    //       link TEXT,
+    //       FOREIGN KEY(articleId) REFERENCES Article(id),
+    //       FOREIGN KEY(websiteId) REFERENCES Website(id)
+    //     )
+    // `);
 });
 
 //Insert Values
 
-const insertCategory = (name, banner, subCategory) => {
-    const sql = `INSERT INTO Category (name, banner, subCategory) VALUES (?, ?, ?)`;
-    db.run(sql, [name, banner, subCategory], function (err) {
-        if (err) {
-            return console.error('Erreur:', err.message);
-        }
-        console.log(`Catégorie insérée avec succès. ID : ${this.lastID}`);
-    });
+const insertArticle = (
+    title,
+    description,
+    categoryId,
+    price,
+    photos,
+    state,
+    created_at,
+    sold_at,
+    platform,
+) => {
+    const sql = `INSERT INTO Article (title, description, categoryId, price, photos, state, created_at, sold_at, platform) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?)`;
+    db.run(
+        sql,
+        [
+            title,
+            description,
+            categoryId,
+            price,
+            photos,
+            state,
+            created_at,
+            sold_at,
+            platform,
+        ],
+        function (err) {
+            if (err) {
+                return console.error('Erreur:', err.message);
+            }
+            console.log(`Website insérée avec succès. ID : ${this.lastID}`);
+        },
+    );
 };
 
-// Appelle la fonction d’insertion avec des valeurs d’exemple
-insertCategory('Livres', 'test.jpg', 'sciences,littérature,autres');
-insertCategory('Objets à collectionner', 'test.jpg', 'Pokemon,Timbre');
-insertCategory('Vêtements', 'test.jpg', 'Haut,Bas,Accessoires');
-insertCategory('Autres', 'test.jpg', '');
+//Appelle la fonction d’insertion avec des valeurs d’exemple
+insertArticle(
+    'Découvrez votre potentiel energétique',
+    'livre en très bon état',
+    1,
+    501,
+    0,
+    'sold',
+    '2025-01-01',
+    '2025-05-02',
+    2,
+);
+insertArticle(
+    'Sans classe ni place',
+    'livre en bon état',
+    1,
+    400,
+    0,
+    'sold',
+    '2025-01-01',
+    '2025-05-05',
+    1,
+);
+insertArticle(
+    'Lots de livrets paroles et prières',
+    'livrets en bon état',
+    1,
+    4000,
+    0,
+    'sold',
+    '2025-01-01',
+    '2025-05-09',
+    3,
+);
 
 db.close();
 
