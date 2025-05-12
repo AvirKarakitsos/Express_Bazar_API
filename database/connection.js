@@ -67,51 +67,21 @@ db.serialize(() => {
 
 //Insert Values
 
-const insertArticle = (
-    title,
-    description,
-    categoryId,
-    price,
-    photos,
-    state,
-    created_at,
-    sold_at,
-    platform,
-) => {
-    const sql = `INSERT INTO Article (title, description, categoryId, price, photos, state, created_at, sold_at, platform) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?)`;
-    db.run(
-        sql,
-        [
-            title,
-            description,
-            categoryId,
-            price,
-            photos,
-            state,
-            created_at,
-            sold_at,
-            platform,
-        ],
-        function (err) {
-            if (err) {
-                return console.error('Erreur:', err.message);
-            }
-            console.log(`Website insérée avec succès. ID : ${this.lastID}`);
-        },
-    );
+const insertAvailableOn = (articleId, websiteId, link) => {
+    const sql = `INSERT INTO AvailableOn (articleId, websiteId, link) VALUES (?, ?, ?)`;
+    db.run(sql, [articleId, websiteId, link], function (err) {
+        if (err) {
+            return console.error('Erreur:', err.message);
+        }
+        console.log(`Item inséré avec succès. ID : ${this.lastID}`);
+    });
 };
 
-//Appelle la fonction d’insertion avec des valeurs d’exemple
-// insertArticle(
-//     'Le Livre De Ma Grand-Mère - Cetin Fethiyé',
-//     'livre en très bon état',
-//     1,
-//     700,
-//     2,
-//     'online',
-//     '2025-01-01',
-//     null,
-//     null,
-// );
+//Appelle la fonction d’insertion
+insertAvailableOn(
+    5,
+    1,
+    'https://www.vinted.fr/items/5952482518-k-way-femme-new-man-taille-38',
+);
 
 export default db;
