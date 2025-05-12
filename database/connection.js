@@ -102,40 +102,16 @@ const insertArticle = (
 };
 
 //Appelle la fonction d’insertion avec des valeurs d’exemple
-insertArticle(
-    'Découvrez votre potentiel energétique',
-    'livre en très bon état',
-    1,
-    501,
-    0,
-    'sold',
-    '2025-01-01',
-    '2025-05-02',
-    2,
-);
-insertArticle(
-    'Sans classe ni place',
-    'livre en bon état',
-    1,
-    400,
-    0,
-    'sold',
-    '2025-01-01',
-    '2025-05-05',
-    1,
-);
-insertArticle(
-    'Lots de livrets paroles et prières',
-    'livrets en bon état',
-    1,
-    4000,
-    0,
-    'sold',
-    '2025-01-01',
-    '2025-05-09',
-    3,
-);
-
-db.close();
+// insertArticle(
+//     'Le Livre De Ma Grand-Mère - Cetin Fethiyé',
+//     'livre en très bon état',
+//     1,
+//     700,
+//     2,
+//     'online',
+//     '2025-01-01',
+//     null,
+//     null,
+// );
 
 export default db;
