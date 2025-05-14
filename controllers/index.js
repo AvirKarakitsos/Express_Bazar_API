@@ -15,19 +15,23 @@ export const allOnline = (req, res) => {
     });
 };
 
-export const allSold = (req, res) => {
-    db.all('SELECT * FROM Article WHERE state = ?', ['sold'], (err, rows) => {
-        if (err) {
-            console.error(err.message);
-            return;
-        }
+export const lastArticles = (req, res) => {
+    db.all(
+        'SELECT id, title, categoryId, price, state FROM Article ORDER BY id DESC LIMIT 5',
+        [],
+        (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                return;
+            }
 
-        res.status(200).json(rows);
-    });
+            res.status(200).json(rows);
+        },
+    );
 };
 
 export const figures = (req, res) => {
-    db.all('SELECT state, price FROM Article', (err, rows) => {
+    db.all('SELECT state, price FROM Article', [], (err, rows) => {
         if (err) {
             console.error(err.message);
             return;
