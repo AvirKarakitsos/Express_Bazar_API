@@ -1,7 +1,7 @@
 import express from 'express';
 import {
     index,
-    allOnline,
+    lastMonth,
     lastArticles,
     figures,
 } from '../controllers/index.js';
@@ -10,9 +10,9 @@ const router = express.Router();
 
 router.get('/', index);
 
-router.get('/online', allOnline);
+router.get('/lastmonth', lastMonth);
 
-router.get('/last', lastArticles);
+router.get('/lastarticles', lastArticles);
 
 router.get('/figures', figures);
 
