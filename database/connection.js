@@ -15,7 +15,20 @@ const db = new sql3.Database(
     },
 );
 
-db.run('PRAGMA foreign_keys = ON');
+db.serialize(() => {
+    db.run('PRAGMA foreign_keys = ON');
+
+    // db.run(
+    //     'UPDATE Article SET title = ? WHERE id = ?',
+    //     ["Saint Charbel prophète de l'Amour", 9],
+    //     function (err) {
+    //         if (err) {
+    //             return console.error(err.message);
+    //         }
+    //         console.log(`Ligne(s) modifiée(s) : ${this.changes}`);
+    //     },
+    // );
+});
 
 //Insert Values
 
@@ -29,51 +42,51 @@ db.run('PRAGMA foreign_keys = ON');
 //     });
 // };
 
-const insertValues = (
-    title,
-    description,
-    categoryId,
-    price,
-    photos,
-    state,
-    created_at,
-    sold_at,
-    platform,
-) => {
-    const sql = `INSERT INTO Article (title, description, categoryId, price,photos,state,created_at,sold_at,platform)VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    db.run(
-        sql,
-        [
-            title,
-            description,
-            categoryId,
-            price,
-            photos,
-            state,
-            created_at,
-            sold_at,
-            platform,
-        ],
-        function (err) {
-            if (err) {
-                return console.error('Erreur:', err.message);
-            }
-            console.log(`Item inséré avec succès. ID : ${this.lastID}`);
-        },
-    );
-};
+// const insertValues = (
+//     title,
+//     description,
+//     categoryId,
+//     price,
+//     photos,
+//     state,
+//     created_at,
+//     sold_at,
+//     platform,
+// ) => {
+//     const sql = `INSERT INTO Article (title, description, categoryId, price,photos,state,created_at,sold_at,platform)VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+//     db.run(
+//         sql,
+//         [
+//             title,
+//             description,
+//             categoryId,
+//             price,
+//             photos,
+//             state,
+//             created_at,
+//             sold_at,
+//             platform,
+//         ],
+//         function (err) {
+//             if (err) {
+//                 return console.error('Erreur:', err.message);
+//             }
+//             console.log(`Item inséré avec succès. ID : ${this.lastID}`);
+//         },
+//     );
+// };
 
 //Appelle la fonction d’insertion
-insertValues(
-    'distributions théorie et problemes',
-    "livre en bon état, quelques tâches d'usures",
-    1,
-    45,
-    0,
-    'sold',
-    '2025-01-01',
-    '2025-05-13',
-    3,
-);
+// insertValues(
+//     'A court of Frost and Starlight - Sarah J.Maas',
+//     'Livre en anglais et en bon état',
+//     1,
+//     800,
+//     0,
+//     'stock',
+//     '2025-05-14',
+//     null,
+//     null,
+// );
 
 export default db;

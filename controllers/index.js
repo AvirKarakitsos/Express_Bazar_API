@@ -25,3 +25,29 @@ export const allSold = (req, res) => {
         res.status(200).json(rows);
     });
 };
+
+export const figures = (req, res) => {
+    db.all('SELECT state, price FROM Article', (err, rows) => {
+        if (err) {
+            console.error(err.message);
+            return;
+        }
+
+        let sumSold = rows.reduce((acc, curr) => {
+            if (curr.state === 'sold') {
+                acc = acc + curr.price;
+            }
+            return acc;
+        }, 0);
+
+        let numberStock = rows.filter((row) => row.state === 'stock');
+
+        let numberOnline = rows.filter((row) => row.state === 'online');
+
+        res.status(200).json({
+            numberStock: numberStock.length,
+            numberOnline: numberOnline.length,
+            sumSold,
+        });
+    });
+};
