@@ -6,7 +6,10 @@ export const index = (req, res) => {
 
 export const lastMonth = (req, res) => {
     db.all(
-        "SELECT platform, price FROM Article WHERE strftime('%Y-%m', sold_at) = strftime('%Y-%m', 'now')",
+        `SELECT Article.id, price, Website.name AS website_name 
+        FROM Article 
+        JOIN Website ON Article.platform = Website.id
+        WHERE strftime('%Y-%m', sold_at) = strftime('%Y-%m', 'now')`,
         [],
         (err, rows) => {
             if (err) {
