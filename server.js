@@ -1,7 +1,7 @@
 import express from 'express';
 import { logger } from './middleware/logEvents.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import routeApi from './routes/api.js';
+import routes from './routes/index.js';
 import db from './database/connection.js';
 
 const PORT = 4000;
@@ -10,7 +10,7 @@ const server = express();
 
 server.use(logger);
 
-server.use('/api', routeApi);
+server.use('/api', routes);
 
 server.use(errorHandler);
 

@@ -1,9 +1,5 @@
 import db from '../database/connection.js';
 
-export const index = (req, res) => {
-    res.status(200).json('success request');
-};
-
 export const lastMonth = (req, res) => {
     db.all(
         `SELECT Article.id, price, Website.name AS website_name 

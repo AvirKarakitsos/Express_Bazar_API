@@ -1,14 +1,11 @@
 import express from 'express';
 import {
-    index,
     lastMonth,
     lastArticles,
     figures,
-} from '../controllers/index.js';
+} from '../controllers/articlesController.js';
 
 const router = express.Router();
-
-router.get('/', index);
 
 router.get('/lastmonth', lastMonth);
 
