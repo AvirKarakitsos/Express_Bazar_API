@@ -1,16 +1,19 @@
 import express from 'express';
 import {
-    lastMonth,
-    lastArticles,
-    figures,
+    soldRecent,
+    allRecent,
+    allFigures,
+    storeStock,
 } from '../controllers/articlesController.js';
 
 const router = express.Router();
 
-router.get('/lastmonth', lastMonth);
+router.get('/sold/recent', soldRecent);
 
-router.get('/lastarticles', lastArticles);
+router.get('/all/recent', allRecent);
 
-router.get('/figures', figures);
+router.get('/all/figures', allFigures);
+
+router.post('/stock', storeStock);
 
 export default router;

@@ -1,6 +1,9 @@
 import db from '../database/connection.js';
+import { getCurrentDateFormatted } from '../utilities/tools.js';
 
-export const lastMonth = (req, res) => {
+//GET METHOD
+
+export const soldRecent = (req, res) => {
     db.all(
         `SELECT Article.id, price, Website.name AS website_name 
         FROM Article 
@@ -18,7 +21,7 @@ export const lastMonth = (req, res) => {
     );
 };
 
-export const lastArticles = (req, res) => {
+export const allRecent = (req, res) => {
     db.all(
         'SELECT id, title, categoryId, price, state FROM Article ORDER BY id DESC LIMIT 5',
         [],
@@ -33,7 +36,7 @@ export const lastArticles = (req, res) => {
     );
 };
 
-export const figures = (req, res) => {
+export const allFigures = (req, res) => {
     db.all('SELECT state, price FROM Article', [], (err, rows) => {
         if (err) {
             console.error(err.message);
@@ -57,4 +60,24 @@ export const figures = (req, res) => {
             sumSold,
         });
     });
+};
+
+//POST METHOD
+
+export const storeStock = (req, res) => {
+    try {
+        const result = req.body;
+        console.log(result);
+
+        const store = {
+            ...result,
+            state: 'stock',
+            created_at: getCurrentDateFormatted(),
+        };
+
+        res.status(201).json({ message: 'post completed' });
+    } catch (e) {
+        console.log(e);
+        res.state(500).json({ message: 'erreur lors du post' });
+    }
 };
