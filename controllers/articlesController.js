@@ -62,12 +62,31 @@ export const allFigures = (req, res) => {
     });
 };
 
+//      JOIN Website ON Article.platform = Website.id
+
+export const stockCategories = (req, res) => {
+    db.all(
+        `SELECT Category.name, COUNT(*) AS groupByCategory 
+        FROM Article
+        JOIN Category ON Article.categoryId = Category.id
+        WHERE state = 'stock'`,
+        [],
+        (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                return;
+            }
+            console.log(rows);
+            res.status(200).json({ message: 'resquest success' });
+        },
+    );
+};
+
 //POST METHOD
 
-export const storeStock = (req, res) => {
+export const stockStore = (req, res) => {
     try {
         const result = req.body;
-        console.log(result);
 
         const store = {
             ...result,
@@ -75,7 +94,32 @@ export const storeStock = (req, res) => {
             created_at: getCurrentDateFormatted(),
         };
 
-        res.status(201).json({ message: 'post completed' });
+        console.log(store);
+
+        const sql = `INSERT INTO Article (title, description, categoryId, price, state, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?)`;
+
+        const params = [
+            store.title,
+            store.description,
+            store.categoryId,
+            store.price,
+            store.state,
+            store.created_at,
+        ];
+
+        db.run(sql, params, function (err) {
+            if (err) {
+                console.error(err.message);
+                res.status(500).json({ error: "Erreur lors de l'insertion" });
+                return;
+            }
+
+            res.status(201).json({
+                message: 'Article ajouté avec succès',
+                id: this.lastID,
+            });
+        });
     } catch (e) {
         console.log(e);
         res.state(500).json({ message: 'erreur lors du post' });

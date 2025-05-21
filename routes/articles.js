@@ -3,7 +3,8 @@ import {
     soldRecent,
     allRecent,
     allFigures,
-    storeStock,
+    stockStore,
+    stockCategories,
 } from '../controllers/articlesController.js';
 
 const router = express.Router();
@@ -14,6 +15,8 @@ router.get('/all/recent', allRecent);
 
 router.get('/all/figures', allFigures);
 
-router.post('/stock', storeStock);
+router.get('/stock/categories', stockCategories);
+
+router.post('/stock', stockStore);
 
 export default router;
