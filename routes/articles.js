@@ -5,11 +5,14 @@ import {
     allFigures,
     stockStore,
     stockCategories,
+    soldByMonth,
 } from '../controllers/articlesController.js';
 
 const router = express.Router();
 
 router.get('/sold/recent', soldRecent);
+
+router.get('/sold/monthly', soldByMonth);
 
 router.get('/all/recent', allRecent);
 

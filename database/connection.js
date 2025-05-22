@@ -78,15 +78,15 @@ db.serialize(() => {
 
 //Appelle la fonction d’insertion
 // insertValues(
-//     'A court of Frost and Starlight - Sarah J.Maas',
-//     'Livre en anglais et en bon état',
+//     "Confession d'un sayan",
+//     'Livre en très bon état',
 //     1,
-//     800,
+//     501,
 //     0,
-//     'stock',
-//     '2025-05-14',
-//     null,
-//     null,
+//     'sold',
+//     '2025-01-14',
+//     '2025-04-30',
+//     2,
 // );
 
 export default db;

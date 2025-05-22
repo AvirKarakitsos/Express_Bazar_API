@@ -16,7 +16,56 @@ export const soldRecent = (req, res) => {
                 return;
             }
 
-            res.status(200).json(rows);
+            const grouped = {};
+
+            rows.forEach((row) => {
+                const { website_name, ...article } = row;
+
+                if (!grouped[website_name]) {
+                    grouped[website_name] = [];
+                }
+
+                grouped[website_name].push(article);
+            });
+
+            res.status(200).json(grouped);
+        },
+    );
+};
+
+export const soldByMonth = (req, res) => {
+    db.all(
+        `SELECT Article.id, price, strftime('%m', sold_at) AS month, Website.name AS website_name 
+        FROM Article 
+        JOIN Website ON Article.platform = Website.id
+        WHERE state='sold'
+        `,
+        [],
+        (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                return;
+            }
+
+            const grouped = {};
+
+            rows.forEach((row) => {
+                const { month, website_name, ...article } = row;
+
+                if (!grouped[month]) {
+                    grouped[month] = {};
+                }
+
+                if (!grouped[month][website_name]) {
+                    grouped[month][website_name] = [];
+                }
+
+                grouped[month][website_name].push(article);
+            });
+
+            //console.log(JSON.stringify(grouped, null, 2));
+
+            res.status(200).json(grouped);
         },
     );
 };
@@ -61,8 +110,6 @@ export const allFigures = (req, res) => {
         });
     });
 };
-
-//      JOIN Website ON Article.platform = Website.id
 
 export const stockCategories = (req, res) => {
     db.all(
