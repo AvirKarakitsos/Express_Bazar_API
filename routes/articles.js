@@ -3,7 +3,7 @@ import {
     soldRecent,
     allRecent,
     allFigures,
-    stockStore,
+    store,
     stockCategories,
     soldByMonth,
 } from '../controllers/articlesController.js';
@@ -20,6 +20,6 @@ router.get('/all/figures', allFigures);
 
 router.get('/stock/categories', stockCategories);
 
-router.post('/stock', stockStore);
+router.post('/', store);
 
 export default router;

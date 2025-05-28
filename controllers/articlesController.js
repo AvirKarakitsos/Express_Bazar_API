@@ -131,35 +131,67 @@ export const stockCategories = (req, res) => {
 
 //POST METHOD
 
-export const stockStore = (req, res) => {
+export const store = (req, res) => {
     try {
         const result = req.body;
 
-        const store = {
-            ...result,
-            state: 'stock',
-            created_at: getCurrentDateFormatted(),
-        };
-
-        console.log(store);
-
-        const sql = `INSERT INTO Article (title, description, categoryId, price, state, created_at)
+        const sqlArticle = `INSERT INTO Article (title, description, categoryId, price, state, created_at)
                  VALUES (?, ?, ?, ?, ?, ?)`;
 
-        const params = [
-            store.title,
-            store.description,
-            store.categoryId,
-            store.price,
-            store.state,
-            store.created_at,
+        const paramsArticle = [
+            result.title,
+            result.description,
+            parseInt(result.category),
+            parseInt(result.price),
+            result.page,
+            getCurrentDateFormatted(),
         ];
 
-        db.run(sql, params, function (err) {
+        db.run(sqlArticle, paramsArticle, function (err) {
             if (err) {
                 console.error(err.message);
-                res.status(500).json({ error: "Erreur lors de l'insertion" });
+                res.status(500).json({
+                    error: "Erreur lors de l'insertion",
+                });
                 return;
+            }
+
+            const id = this.lastID;
+
+            if (result.page === 'online') {
+                const platformSplit = result.platform.split(';');
+
+                const platformTab = [];
+
+                platformSplit.forEach((item) => {
+                    if (item.includes('vinted')) platformTab.push(1);
+                    else if (item.includes('leboncoin')) platformTab.push(2);
+                    else if (item.includes('rakuten')) platformTab.push(3);
+                    else if (item.includes('ebay')) platformTab.push(4);
+                });
+
+                const sqlAvailableOn = `INSERT INTO AvailableOn (articleId, websiteId, link)
+                    VALUES (?, ?, ?)`;
+
+                platformTab.forEach((platform, idx) => {
+                    db.run(
+                        sqlAvailableOn,
+                        [id, platform, platformSplit[idx]],
+                        function (err) {
+                            if (err) {
+                                console.error(err.message);
+                                res.status(500).json({
+                                    error: "Erreur lors de l'insertion",
+                                });
+                                return;
+                            }
+
+                            console.log(
+                                `Article ${id} disponible sur la plateforme ${platform}`,
+                            );
+                        },
+                    );
+                });
             }
 
             res.status(201).json({
