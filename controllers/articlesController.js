@@ -135,16 +135,18 @@ export const store = (req, res) => {
     try {
         const result = req.body;
 
-        const sqlArticle = `INSERT INTO Article (title, description, categoryId, price, state, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?)`;
+        const sqlArticle = `INSERT INTO Article (title, description, categoryId, price, state, created_at, sold_at, platform)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
         const paramsArticle = [
             result.title,
             result.description,
             parseInt(result.category),
             parseInt(result.price),
-            result.page,
-            getCurrentDateFormatted(),
+            result.state,
+            result?.created_at || getCurrentDateFormatted(),
+            result?.sold_at || null,
+            parseInt(result?.platform) || null,
         ];
 
         db.run(sqlArticle, paramsArticle, function (err) {
@@ -156,10 +158,12 @@ export const store = (req, res) => {
                 return;
             }
 
-            const id = this.lastID;
+            let lastId = this.lastID;
 
-            if (result.page === 'online') {
-                const platformSplit = result.platform.split(';');
+            if (result.state === 'online') {
+                console.log(lastId);
+
+                const platformSplit = result.link.split(';');
 
                 const platformTab = [];
 
@@ -170,34 +174,51 @@ export const store = (req, res) => {
                     else if (item.includes('ebay')) platformTab.push(4);
                 });
 
+                console.log(platformTab);
+
                 const sqlAvailableOn = `INSERT INTO AvailableOn (articleId, websiteId, link)
                     VALUES (?, ?, ?)`;
 
-                platformTab.forEach((platform, idx) => {
-                    db.run(
-                        sqlAvailableOn,
-                        [id, platform, platformSplit[idx]],
-                        function (err) {
-                            if (err) {
-                                console.error(err.message);
-                                res.status(500).json({
-                                    error: "Erreur lors de l'insertion",
-                                });
-                                return;
-                            }
+                function runAsync(sql, params) {
+                    return new Promise((resolve, reject) => {
+                        db.run(sql, params, function (err) {
+                            if (err) return reject(err);
+                            resolve(); // this contient info sur la requête, comme lastID ou changes
+                        });
+                    });
+                }
 
+                async function insertPlatforms() {
+                    try {
+                        for (let i = 0; i < platformTab.length; i++) {
+                            await runAsync(sqlAvailableOn, [
+                                lastId,
+                                platformTab[i],
+                                platformSplit[i],
+                            ]);
                             console.log(
-                                `Article ${id} disponible sur la plateforme ${platform}`,
+                                `Article ${lastId} disponible sur la plateforme ${platformTab[i]}`,
                             );
-                        },
-                    );
+                        }
+
+                        return res.status(201).json({
+                            message: 'Insertions terminées',
+                        });
+                    } catch (err) {
+                        console.error(err.message);
+                        res.status(500).json({
+                            error: "Erreur lors d'une insertion",
+                        });
+                    }
+                }
+
+                insertPlatforms();
+            } else {
+                res.status(201).json({
+                    message: 'Article ajouté avec succès',
+                    id: lastId,
                 });
             }
-
-            res.status(201).json({
-                message: 'Article ajouté avec succès',
-                id: this.lastID,
-            });
         });
     } catch (e) {
         console.log(e);
