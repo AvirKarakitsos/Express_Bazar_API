@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+    getStockAll,
     getSoldAll,
     getSoldLastMonth,
     allRecent,
@@ -10,6 +11,8 @@ import {
 } from '../controllers/articlesController.js';
 
 const router = express.Router();
+
+router.get('/stock', getStockAll);
 
 router.get('/sold', getSoldAll);
 

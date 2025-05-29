@@ -3,24 +3,24 @@ import { getCurrentDateFormatted } from '../utilities/tools.js';
 
 //GET METHOD
 
-// export const getStockAll = (req, res) => {
-//     db.all(
-//         `SELECT Article.id, title, price, Website.name AS websiteName, Category.name AS catagoryName, sold_at
-//         FROM Article
-//         JOIN Website ON Article.platform = Website.id
-//         JOIN Category ON Article.categoryId = Category.id
-//         ORDER BY sold_at DESC;`,
-//         [],
-//         (err, rows) => {
-//             if (err) {
-//                 console.error(err.message);
-//                 return;
-//             }
+export const getStockAll = (req, res) => {
+    db.all(
+        `SELECT Article.id, title, price, created_at, Category.name AS catagoryName
+        FROM Article
+        JOIN Category ON Article.categoryId = Category.id
+        WHERE state = 'stock'
+        ORDER BY created_at DESC;`,
+        [],
+        (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                return;
+            }
 
-//             res.status(200).json(rows);
-//         },
-//     );
-// };
+            res.status(200).json(rows);
+        },
+    );
+};
 
 export const getSoldAll = (req, res) => {
     db.all(
