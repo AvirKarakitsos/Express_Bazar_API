@@ -3,7 +3,26 @@ import { getCurrentDateFormatted } from '../utilities/tools.js';
 
 //GET METHOD
 
-export const soldRecent = (req, res) => {
+export const getSoldAll = (req, res) => {
+    db.all(
+        `SELECT Article.id, title, price, Website.name AS websiteName, Category.name AS catagoryName, sold_at
+        FROM Article
+        JOIN Website ON Article.platform = Website.id
+        JOIN Category ON Article.categoryId = Category.id
+        ORDER BY sold_at DESC;`,
+        [],
+        (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                return;
+            }
+
+            res.status(200).json(rows);
+        },
+    );
+};
+
+export const getSoldLastMonth = (req, res) => {
     db.all(
         `SELECT Article.id, price, Website.name AS website_name 
         FROM Article 

@@ -1,6 +1,7 @@
 import express from 'express';
 import {
-    soldRecent,
+    getSoldAll,
+    getSoldLastMonth,
     allRecent,
     allFigures,
     store,
@@ -10,7 +11,9 @@ import {
 
 const router = express.Router();
 
-router.get('/sold/recent', soldRecent);
+router.get('/sold', getSoldAll);
+
+router.get('/sold/recent', getSoldLastMonth);
 
 router.get('/sold/monthly', soldByMonth);
 
