@@ -55,6 +55,7 @@ export const getSoldLastMonth = (req, res) => {
                 return;
             }
 
+            //Group by website
             const grouped = {};
 
             rows.forEach((row) => {
@@ -67,7 +68,18 @@ export const getSoldLastMonth = (req, res) => {
                 grouped[website_name].push(article);
             });
 
-            res.status(200).json(grouped);
+            const x = Object.keys(grouped);
+            const series = [];
+
+            for (const key in grouped) {
+                let sum = grouped[key].reduce((acc, curr) => {
+                    acc = acc + curr.price;
+                    return acc;
+                }, 0);
+                series.push(sum);
+            }
+
+            res.status(200).json({ x, series });
         },
     );
 };
