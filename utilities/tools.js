@@ -13,10 +13,10 @@ export function whichColor(value) {
             color = '#17e9e3';
             break;
         case 'Rakuten':
-            color = '#df0a30';
+            color = '#fd6262';
             break;
         case 'Leboncoin':
-            color = '#ce4708';
+            color = '#fdb462';
             break;
         case 'Ebay':
             color = '#ce4708';

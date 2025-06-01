@@ -222,20 +222,84 @@ export const allFigures = (req, res) => {
     });
 };
 
-export const stockCategories = (req, res) => {
+export const getStockCategories = (req, res) => {
     db.all(
-        `SELECT Category.name, COUNT(*) AS groupByCategory 
+        `SELECT Category.name AS category_name 
         FROM Article
         JOIN Category ON Article.categoryId = Category.id
-        WHERE state = 'stock'`,
+        WHERE state = 'stock'
+        ORDER BY category_name `,
         [],
         (err, rows) => {
             if (err) {
                 console.error(err.message);
                 return;
             }
-            console.log(rows);
-            res.status(200).json({ message: 'resquest success' });
+
+            const sortByCategory = rows.reduce((acc, cur) => {
+                if (!acc[cur.category_name]) {
+                    acc[cur.category_name] = 1;
+                } else {
+                    acc[cur.category_name] = acc[cur.category_name] + 1;
+                }
+                return acc;
+            }, {});
+
+            let result = [];
+            let count = 0;
+
+            for (let key in sortByCategory) {
+                let element = {
+                    id: count,
+                    value: sortByCategory[key],
+                    label: key,
+                };
+                result.push(element);
+                count = count + 1;
+            }
+
+            res.status(200).json({ result });
+        },
+    );
+};
+
+export const getOnlineCategories = (req, res) => {
+    db.all(
+        `SELECT Category.name AS category_name 
+        FROM Article
+        JOIN Category ON Article.categoryId = Category.id
+        WHERE state = 'online'
+        ORDER BY category_name `,
+        [],
+        (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                return;
+            }
+
+            const sortByCategory = rows.reduce((acc, cur) => {
+                if (!acc[cur.category_name]) {
+                    acc[cur.category_name] = 1;
+                } else {
+                    acc[cur.category_name] = acc[cur.category_name] + 1;
+                }
+                return acc;
+            }, {});
+
+            let result = [];
+            let count = 0;
+
+            for (let key in sortByCategory) {
+                let element = {
+                    id: count,
+                    value: sortByCategory[key],
+                    label: key,
+                };
+                result.push(element);
+                count = count + 1;
+            }
+
+            res.status(200).json({ result });
         },
     );
 };

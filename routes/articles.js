@@ -6,7 +6,8 @@ import {
     allRecent,
     allFigures,
     store,
-    stockCategories,
+    getStockCategories,
+    getOnlineCategories,
     soldByMonth,
 } from '../controllers/articlesController.js';
 
@@ -24,7 +25,9 @@ router.get('/all/recent', allRecent);
 
 router.get('/all/figures', allFigures);
 
-router.get('/stock/categories', stockCategories);
+router.get('/stock/categories', getStockCategories);
+
+router.get('/online/categories', getOnlineCategories);
 
 router.post('/', store);
 
