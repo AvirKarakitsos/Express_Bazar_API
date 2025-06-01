@@ -5,7 +5,11 @@ import { getCurrentDateFormatted, whichColor } from '../utilities/tools.js';
 
 export const getStockAll = (req, res) => {
     db.all(
-        `SELECT Article.id, title, price, created_at, Category.name AS catagoryName
+        `SELECT Article.id, 
+        title AS Titre, 
+        price AS Prix, 
+        Category.name AS Catagorie, 
+        created_at AS Créé 
         FROM Article
         JOIN Category ON Article.categoryId = Category.id
         WHERE state = 'stock'
@@ -17,14 +21,19 @@ export const getStockAll = (req, res) => {
                 return;
             }
 
-            res.status(200).json(rows);
+            res.status(200).json({ result: rows });
         },
     );
 };
 
 export const getSoldAll = (req, res) => {
     db.all(
-        `SELECT Article.id, title, price, Website.name AS websiteName, Category.name AS catagoryName, sold_at
+        `SELECT Article.id, 
+        title AS Titre, 
+        price AS Prix, 
+        Website.name AS Site, 
+        Category.name AS Catagorie, 
+        sold_at AS Vendu
         FROM Article
         JOIN Website ON Article.platform = Website.id
         JOIN Category ON Article.categoryId = Category.id
@@ -37,7 +46,7 @@ export const getSoldAll = (req, res) => {
                 return;
             }
 
-            res.status(200).json(rows);
+            res.status(200).json({ result: rows });
         },
     );
 };
@@ -183,7 +192,15 @@ export const soldByMonth = (req, res) => {
 
 export const allRecent = (req, res) => {
     db.all(
-        'SELECT id, title, categoryId, price, state FROM Article ORDER BY id DESC LIMIT 5',
+        `SELECT Article.id, 
+        title AS Titre, 
+        Category.name AS Catégorie, 
+        price AS Prix, 
+        state AS Etat 
+        FROM Article 
+        JOIN Category ON Article.categoryId = Category.id
+        ORDER BY Article.id DESC 
+        LIMIT 5`,
         [],
         (err, rows) => {
             if (err) {
@@ -191,7 +208,7 @@ export const allRecent = (req, res) => {
                 return;
             }
 
-            res.status(200).json(rows);
+            res.status(200).json({ result: rows });
         },
     );
 };
