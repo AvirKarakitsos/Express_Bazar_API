@@ -1,5 +1,5 @@
 import db from '../database/connection.js';
-import { getCurrentDateFormatted } from '../utilities/tools.js';
+import { getCurrentDateFormatted, whichColor } from '../utilities/tools.js';
 
 //GET METHOD
 
@@ -47,7 +47,7 @@ export const getSoldLastMonth = (req, res) => {
         `SELECT Article.id, price, Website.name AS website_name 
         FROM Article 
         JOIN Website ON Article.platform = Website.id
-        WHERE strftime('%Y-%m', sold_at) = strftime('%Y-%m', 'now')`,
+        WHERE strftime('%Y-%m', sold_at) = strftime('%Y-%m', '2025-05-01')`, //ATTENTION CHANGEMENT 'now'
         [],
         (err, rows) => {
             if (err) {
@@ -68,18 +68,37 @@ export const getSoldLastMonth = (req, res) => {
                 grouped[website_name].push(article);
             });
 
-            const x = Object.keys(grouped);
+            // x axis for bar chart
+            const x = [
+                {
+                    data: ['Mois en cours'],
+                    barGapRatio: 0.8,
+                },
+            ];
+
+            // y axis for bar chart
             const series = [];
+            let totalSum = 0;
 
             for (const key in grouped) {
+                let obj = {
+                    data: [],
+                    label: key,
+                    color: whichColor(key),
+                };
+
                 let sum = grouped[key].reduce((acc, curr) => {
                     acc = acc + curr.price;
                     return acc;
                 }, 0);
-                series.push(sum);
+
+                obj.data.push(sum / 100);
+                totalSum = totalSum + sum;
+
+                series.push(obj);
             }
 
-            res.status(200).json({ x, series });
+            res.status(200).json({ x, series, totalSum: totalSum / 100 });
         },
     );
 };
@@ -90,6 +109,7 @@ export const soldByMonth = (req, res) => {
         FROM Article 
         JOIN Website ON Article.platform = Website.id
         WHERE state='sold'
+        ORDER BY month ASC
         `,
         [],
         (err, rows) => {
@@ -98,25 +118,65 @@ export const soldByMonth = (req, res) => {
                 return;
             }
 
-            const grouped = {};
-
-            rows.forEach((row) => {
-                const { month, website_name, ...article } = row;
-
-                if (!grouped[month]) {
-                    grouped[month] = {};
+            // x axis for bar chart
+            let testMonth = null;
+            const months = rows.reduce((acc, cur) => {
+                if (cur.month !== testMonth) {
+                    testMonth = cur.month;
+                    acc.push(testMonth);
                 }
+                return acc;
+            }, []);
 
-                if (!grouped[month][website_name]) {
-                    grouped[month][website_name] = [];
-                }
+            const x = [
+                {
+                    data: months,
+                    categoryGapRatio: 0.7,
+                },
+            ];
 
-                grouped[month][website_name].push(article);
+            // y axis for bar chart
+            rows.sort((a, b) => {
+                return a.website_name.localeCompare(b.website_name);
             });
 
-            //console.log(JSON.stringify(grouped, null, 2));
+            let testWebsite = null;
+            const websites = rows.reduce((acc, cur) => {
+                if (cur.website_name !== testWebsite) {
+                    testWebsite = cur.website_name;
+                    acc.push(testWebsite);
+                }
+                return acc;
+            }, []);
 
-            res.status(200).json(grouped);
+            let series = [];
+
+            for (let i = 0; i < websites.length; i++) {
+                let element = {
+                    data: [],
+                    label: websites[i],
+                    color: whichColor(websites[i]),
+                    stack: 'total',
+                };
+
+                for (let j = 0; j < months.length; j++) {
+                    let tableFilter = rows.filter(
+                        (input) =>
+                            input.website_name === websites[i] &&
+                            input.month === months[j],
+                    );
+
+                    let sum = tableFilter.reduce((acc, curr) => {
+                        acc = acc + curr.price;
+                        return acc;
+                    }, 0);
+                    element.data.push(sum / 100);
+                }
+
+                series.push(element);
+            }
+
+            res.status(200).json({ x, series });
         },
     );
 };
