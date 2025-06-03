@@ -12,6 +12,8 @@ import {
 
 const router = express.Router();
 
+router.get('/categories/:state', getArticleByCategory);
+
 router.get('/example', getExample);
 
 router.get('/sold/recent', getSoldLastMonth);
@@ -23,8 +25,6 @@ router.get('/all/recent', allRecent);
 router.get('/all/figures', allFigures);
 
 router.get('/:state', getArticleByState);
-
-router.get('/categories/:state', getArticleByCategory);
 
 router.post('/', store);
 

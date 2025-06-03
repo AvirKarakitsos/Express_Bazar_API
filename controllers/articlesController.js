@@ -79,7 +79,7 @@ export const getSoldLastMonth = (req, res) => {
         `SELECT Article.id, price, Website.name AS website_name 
         FROM Article 
         JOIN Website ON Article.platform = Website.id
-        WHERE strftime('%Y-%m', sold_at) = strftime('%Y-%m', '2025-05-01')`, //ATTENTION CHANGEMENT 'now'
+        WHERE strftime('%Y-%m', sold_at) = strftime('%Y-%m', '2025-06-01')`, //ATTENTION CHANGEMENT 'now'
         [],
         (err, rows) => {
             if (err) {
@@ -87,50 +87,58 @@ export const getSoldLastMonth = (req, res) => {
                 return;
             }
 
-            //Group by website
-            const grouped = {};
+            if (rows.length !== 0) {
+                //Group by website
+                const grouped = {};
 
-            rows.forEach((row) => {
-                const { website_name, ...article } = row;
+                rows.forEach((row) => {
+                    const { website_name, ...article } = row;
 
-                if (!grouped[website_name]) {
-                    grouped[website_name] = [];
+                    if (!grouped[website_name]) {
+                        grouped[website_name] = [];
+                    }
+
+                    grouped[website_name].push(article);
+                });
+
+                // x axis for bar chart
+                const x = [
+                    {
+                        data: ['Mois en cours'],
+                        barGapRatio: 0.8,
+                    },
+                ];
+
+                // y axis for bar chart
+                const series = [];
+                let totalSum = 0;
+
+                for (const key in grouped) {
+                    let obj = {
+                        data: [],
+                        label: key,
+                        color: whichColor(key),
+                    };
+
+                    let sum = grouped[key].reduce((acc, curr) => {
+                        acc = acc + curr.price;
+                        return acc;
+                    }, 0);
+
+                    obj.data.push(sum / 100);
+                    totalSum = totalSum + sum;
+
+                    series.push(obj);
                 }
 
-                grouped[website_name].push(article);
-            });
-
-            // x axis for bar chart
-            const x = [
-                {
-                    data: ['Mois en cours'],
-                    barGapRatio: 0.8,
-                },
-            ];
-
-            // y axis for bar chart
-            const series = [];
-            let totalSum = 0;
-
-            for (const key in grouped) {
-                let obj = {
-                    data: [],
-                    label: key,
-                    color: whichColor(key),
-                };
-
-                let sum = grouped[key].reduce((acc, curr) => {
-                    acc = acc + curr.price;
-                    return acc;
-                }, 0);
-
-                obj.data.push(sum / 100);
-                totalSum = totalSum + sum;
-
-                series.push(obj);
+                res.status(200).json({ x, series, totalSum: totalSum / 100 });
+            } else {
+                res.status(200).json({
+                    x: [{ data: ['Mois en cours'] }],
+                    series: [{ data: [0] }],
+                    totalSum: 0,
+                });
             }
-
-            res.status(200).json({ x, series, totalSum: totalSum / 100 });
         },
     );
 };
