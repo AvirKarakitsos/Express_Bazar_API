@@ -36,74 +36,42 @@ export const getExample = (req, res) => {
     requetesEnBoucle();
 };
 
-export const getStockAll = (req, res) => {
-    db.all(
-        `SELECT Article.id, 
-        title AS Titre, 
-        price AS Prix, 
-        Category.name AS Catagorie, 
-        created_at AS Créé 
-        FROM Article
-        JOIN Category ON Article.categoryId = Category.id
-        WHERE state = 'stock'
-        ORDER BY created_at DESC;`,
-        [],
-        (err, rows) => {
-            if (err) {
-                console.error(err.message);
-                return;
-            }
+export const getArticleByState = (req, res) => {
+    const param = req.params.state;
+    let sql = null;
+    if (param === 'stock' || param === 'online') {
+        sql = `SELECT Article.id, 
+                title AS Titre, 
+                price AS Prix, 
+                Category.name AS Catagorie, 
+                created_at AS Créé 
+                FROM Article
+                JOIN Category ON Article.categoryId = Category.id
+                WHERE state = ?
+                ORDER BY created_at DESC;`;
+    } else if (param === 'sold') {
+        sql = `SELECT Article.id, 
+                title AS Titre, 
+                price AS Prix, 
+                Website.name AS Site, 
+                Category.name AS Catagorie, 
+                sold_at AS Vendu
+                FROM Article
+                JOIN Website ON Article.platform = Website.id
+                JOIN Category ON Article.categoryId = Category.id
+                WHERE state = ?
+                ORDER BY sold_at DESC;`;
+    } else {
+        res.status(500).json({ message: 'error url' });
+    }
 
-            res.status(200).json({ result: rows });
-        },
-    );
-};
-
-export const getOnlineAll = (req, res) => {
-    db.all(
-        `SELECT Article.id, 
-        title AS Titre, 
-        price AS Prix, 
-        Category.name AS Catagorie,
-        created_at AS Créé 
-        FROM Article
-        JOIN Category ON Article.categoryId = Category.id
-        WHERE state = 'online'
-        ORDER BY created_at DESC;`,
-        [],
-        (err, rows) => {
-            if (err) {
-                console.error(err.message);
-                return;
-            }
-
-            res.status(200).json({ result: rows });
-        },
-    );
-};
-export const getSoldAll = (req, res) => {
-    db.all(
-        `SELECT Article.id, 
-        title AS Titre, 
-        price AS Prix, 
-        Website.name AS Site, 
-        Category.name AS Catagorie, 
-        sold_at AS Vendu
-        FROM Article
-        JOIN Website ON Article.platform = Website.id
-        JOIN Category ON Article.categoryId = Category.id
-        WHERE state = 'sold'
-        ORDER BY sold_at DESC;`,
-        [],
-        (err, rows) => {
-            if (err) {
-                console.error(err.message);
-                return;
-            }
-
-            res.status(200).json({ result: rows });
-        },
-    );
+    db.all(sql, [param], (err, rows) => {
+        if (err) {
+            console.error(err.message);
+            return;
+        }
+        res.status(200).json({ result: rows });
+    });
 };
 
 export const getSoldLastMonth = (req, res) => {
