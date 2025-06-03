@@ -1,7 +1,40 @@
 import db from '../database/connection.js';
-import { getCurrentDateFormatted, whichColor } from '../utilities/tools.js';
+import {
+    getCurrentDateFormatted,
+    whichColor,
+    runAsync,
+    allAsync,
+} from '../utilities/tools.js';
 
 //GET METHOD
+
+export const getExample = (req, res) => {
+    const sql = `SELECT AvailableOn.id, 
+        Article.title AS titre, 
+        Website.name AS website,  
+        link
+        FROM AvailableOn
+        JOIN Article ON AvailableOn.articleId = Article.id 
+        JOIN Website ON AvailableOn.websiteId = Website.id 
+        WHERE articleId = ?`;
+
+    async function requetesEnBoucle() {
+        const result = [];
+        const ids = [20, 22, 23];
+
+        for (const id of ids) {
+            let rows = await allAsync(sql, [id]);
+
+            result.push({
+                id,
+                rows,
+            });
+        }
+
+        res.status(200).json({ result });
+    }
+    requetesEnBoucle();
+};
 
 export const getStockAll = (req, res) => {
     db.all(
@@ -26,6 +59,28 @@ export const getStockAll = (req, res) => {
     );
 };
 
+export const getOnlineAll = (req, res) => {
+    db.all(
+        `SELECT Article.id, 
+        title AS Titre, 
+        price AS Prix, 
+        Category.name AS Catagorie,
+        created_at AS Créé 
+        FROM Article
+        JOIN Category ON Article.categoryId = Category.id
+        WHERE state = 'online'
+        ORDER BY created_at DESC;`,
+        [],
+        (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                return;
+            }
+
+            res.status(200).json({ result: rows });
+        },
+    );
+};
 export const getSoldAll = (req, res) => {
     db.all(
         `SELECT Article.id, 
@@ -239,86 +294,51 @@ export const allFigures = (req, res) => {
     });
 };
 
-export const getStockCategories = (req, res) => {
-    db.all(
-        `SELECT Category.name AS category_name 
-        FROM Article
-        JOIN Category ON Article.categoryId = Category.id
-        WHERE state = 'stock'
-        ORDER BY category_name `,
-        [],
-        (err, rows) => {
-            if (err) {
-                console.error(err.message);
-                return;
-            }
+export const getArticleByCategory = (req, res) => {
+    const param = req.params.state;
 
-            const sortByCategory = rows.reduce((acc, cur) => {
-                if (!acc[cur.category_name]) {
-                    acc[cur.category_name] = 1;
-                } else {
-                    acc[cur.category_name] = acc[cur.category_name] + 1;
+    if (param === 'stock' || param === 'online') {
+        db.all(
+            `SELECT Category.name AS category_name 
+            FROM Article
+            JOIN Category ON Article.categoryId = Category.id
+            WHERE state = ?
+            ORDER BY category_name `,
+            [param],
+            (err, rows) => {
+                if (err) {
+                    console.error(err.message);
+                    return;
                 }
-                return acc;
-            }, {});
 
-            let result = [];
-            let count = 0;
+                const sortByCategory = rows.reduce((acc, cur) => {
+                    if (!acc[cur.category_name]) {
+                        acc[cur.category_name] = 1;
+                    } else {
+                        acc[cur.category_name] = acc[cur.category_name] + 1;
+                    }
+                    return acc;
+                }, {});
 
-            for (let key in sortByCategory) {
-                let element = {
-                    id: count,
-                    value: sortByCategory[key],
-                    label: key,
-                };
-                result.push(element);
-                count = count + 1;
-            }
+                let result = [];
+                let count = 0;
 
-            res.status(200).json({ result });
-        },
-    );
-};
-
-export const getOnlineCategories = (req, res) => {
-    db.all(
-        `SELECT Category.name AS category_name 
-        FROM Article
-        JOIN Category ON Article.categoryId = Category.id
-        WHERE state = 'online'
-        ORDER BY category_name `,
-        [],
-        (err, rows) => {
-            if (err) {
-                console.error(err.message);
-                return;
-            }
-
-            const sortByCategory = rows.reduce((acc, cur) => {
-                if (!acc[cur.category_name]) {
-                    acc[cur.category_name] = 1;
-                } else {
-                    acc[cur.category_name] = acc[cur.category_name] + 1;
+                for (let key in sortByCategory) {
+                    let element = {
+                        id: count,
+                        value: sortByCategory[key],
+                        label: key,
+                    };
+                    result.push(element);
+                    count = count + 1;
                 }
-                return acc;
-            }, {});
 
-            let result = [];
-            let count = 0;
-
-            for (let key in sortByCategory) {
-                let element = {
-                    id: count,
-                    value: sortByCategory[key],
-                    label: key,
-                };
-                result.push(element);
-                count = count + 1;
-            }
-
-            res.status(200).json({ result });
-        },
-    );
+                res.status(200).json({ result });
+            },
+        );
+    } else {
+        res.status(500).json({ message: 'error url' });
+    }
 };
 
 //POST METHOD
@@ -334,7 +354,7 @@ export const store = (req, res) => {
             result.title,
             result.description,
             parseInt(result.category),
-            parseInt(result.price),
+            parseInt(result.price) * 100,
             result.state,
             result?.created_at || getCurrentDateFormatted(),
             result?.sold_at || null,
@@ -370,15 +390,6 @@ export const store = (req, res) => {
 
                 const sqlAvailableOn = `INSERT INTO AvailableOn (articleId, websiteId, link)
                     VALUES (?, ?, ?)`;
-
-                function runAsync(sql, params) {
-                    return new Promise((resolve, reject) => {
-                        db.run(sql, params, function (err) {
-                            if (err) return reject(err);
-                            resolve(); // this contient info sur la requête, comme lastID ou changes
-                        });
-                    });
-                }
 
                 async function insertPlatforms() {
                     try {

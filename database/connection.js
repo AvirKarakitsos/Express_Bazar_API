@@ -60,7 +60,7 @@ db.serialize(() => {
 //     sold_at,
 //     platform,
 // ) => {
-//     const sql = `INSERT INTO Article (title, description, categoryId, price,photos,state,created_at,sold_at,platform)VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+//     const sql = `INSERT INTO Article (title, description, categoryId, price, photos, state, created_at, sold_at, platform)VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 //     db.run(
 //         sql,
 //         [
@@ -85,15 +85,15 @@ db.serialize(() => {
 
 //Appelle la fonction d’insertion
 // insertValues(
-//     "Confession d'un sayan",
-//     'Livre en très bon état',
+//     'Catégorie - Aristote',
+//     'Livre en bon état',
 //     1,
-//     501,
+//     300,
 //     0,
 //     'sold',
 //     '2025-01-14',
-//     '2025-04-30',
-//     2,
+//     '2025-04-07',
+//     3,
 // );
 
 export default db;

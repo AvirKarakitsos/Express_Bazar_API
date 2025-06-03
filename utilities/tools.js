@@ -1,3 +1,5 @@
+import db from '../database/connection.js';
+
 export const getCurrentDateFormatted = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -25,4 +27,22 @@ export function whichColor(value) {
             color = '#000';
     }
     return color;
+}
+
+export function runAsync(sql, params) {
+    return new Promise((resolve, reject) => {
+        db.run(sql, params, function (err) {
+            if (err) return reject(err);
+            resolve(); // this contient info sur la requête, comme lastID ou changes
+        });
+    });
+}
+
+export function allAsync(sql, params) {
+    return new Promise((resolve, reject) => {
+        db.all(sql, params, (err, rows) => {
+            if (err) return reject(err);
+            resolve(rows); // Résout la promesse avec les résultats de la requête
+        });
+    });
 }
