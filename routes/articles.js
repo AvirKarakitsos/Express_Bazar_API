@@ -7,14 +7,14 @@ import {
     store,
     getArticleByCategory,
     soldByMonth,
-    getExample,
+    getArticleByWebsite,
 } from '../controllers/articlesController.js';
 
 const router = express.Router();
 
 router.get('/categories/:state', getArticleByCategory);
 
-router.get('/example', getExample);
+router.get('/online/:id', getArticleByWebsite);
 
 router.get('/sold/recent', getSoldLastMonth);
 

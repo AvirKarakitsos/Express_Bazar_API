@@ -8,32 +8,27 @@ import {
 
 //GET METHOD
 
-export const getExample = (req, res) => {
-    const sql = `SELECT AvailableOn.id, 
-        Article.title AS titre, 
-        Website.name AS website,  
-        link
+export const getArticleByWebsite = (req, res) => {
+    const param = parseInt(req.params.id);
+    const sql = `SELECT 
+        articleId, 
+        Website.name AS website
         FROM AvailableOn
-        JOIN Article ON AvailableOn.articleId = Article.id 
         JOIN Website ON AvailableOn.websiteId = Website.id 
         WHERE articleId = ?`;
 
-    async function requetesEnBoucle() {
-        const result = [];
-        const ids = [20, 22, 23];
-
-        for (const id of ids) {
-            let rows = await allAsync(sql, [id]);
-
-            result.push({
-                id,
-                rows,
-            });
+    db.all(sql, [param], (err, rows) => {
+        if (err) {
+            console.error(err.message);
+            return;
         }
 
-        res.status(200).json({ result });
-    }
-    requetesEnBoucle();
+        rows.sort((a, b) => {
+            return a.website.localeCompare(b.website);
+        });
+
+        res.status(200).json({ result: rows });
+    });
 };
 
 export const getArticleByState = (req, res) => {
@@ -41,9 +36,10 @@ export const getArticleByState = (req, res) => {
     let sql = null;
     if (param === 'stock' || param === 'online') {
         sql = `SELECT Article.id, 
-                title AS Titre, 
+                title AS Titre,
+                description AS Description, 
                 price AS Prix, 
-                Category.name AS Catagorie, 
+                Category.name AS Categorie, 
                 created_at AS Créé 
                 FROM Article
                 JOIN Category ON Article.categoryId = Category.id
@@ -54,7 +50,7 @@ export const getArticleByState = (req, res) => {
                 title AS Titre, 
                 price AS Prix, 
                 Website.name AS Site, 
-                Category.name AS Catagorie, 
+                Category.name AS Categorie, 
                 sold_at AS Vendu
                 FROM Article
                 JOIN Website ON Article.platform = Website.id
@@ -328,7 +324,7 @@ export const store = (req, res) => {
 
         const paramsArticle = [
             result.title,
-            result.description,
+            result?.description || null,
             parseInt(result.category),
             parseInt(result.price) * 100,
             result.state,
