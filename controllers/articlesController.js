@@ -3,16 +3,17 @@ import {
     getCurrentDateFormatted,
     whichColor,
     runAsync,
-    allAsync,
 } from '../utilities/tools.js';
 
 //GET METHOD
 
 export const getArticleByWebsite = (req, res) => {
     const param = parseInt(req.params.id);
-    const sql = `SELECT 
+    const sql = `SELECT
+        AvailableOn.id, 
         articleId, 
-        Website.name AS website
+        Website.logoShort,
+        link
         FROM AvailableOn
         JOIN Website ON AvailableOn.websiteId = Website.id 
         WHERE articleId = ?`;
@@ -24,7 +25,7 @@ export const getArticleByWebsite = (req, res) => {
         }
 
         rows.sort((a, b) => {
-            return a.website.localeCompare(b.website);
+            return a.logoShort.localeCompare(b.logoShort);
         });
 
         res.status(200).json({ result: rows });
@@ -39,8 +40,8 @@ export const getArticleByState = (req, res) => {
                 title AS Titre,
                 description AS Description, 
                 price AS Prix, 
-                Category.name AS Categorie, 
-                created_at AS Créé 
+                Category.name AS Categorie,
+                state AS Etat
                 FROM Article
                 JOIN Category ON Article.categoryId = Category.id
                 WHERE state = ?
@@ -49,8 +50,9 @@ export const getArticleByState = (req, res) => {
         sql = `SELECT Article.id, 
                 title AS Titre, 
                 price AS Prix, 
+                Category.name AS Categorie,
+                state AS Etat,
                 Website.name AS Site, 
-                Category.name AS Categorie, 
                 sold_at AS Vendu
                 FROM Article
                 JOIN Website ON Article.platform = Website.id

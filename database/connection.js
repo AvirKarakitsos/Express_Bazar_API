@@ -18,7 +18,7 @@ const db = new sql3.Database(
 db.serialize(() => {
     db.run('PRAGMA foreign_keys = ON');
 
-    // db.run('DELETE FROM Article WHERE id = ?', [28], function (err) {
+    // db.run('DELETE FROM Article WHERE id = ?', [18], function (err) {
     //     if (err) {
     //         return console.error(err.message);
     //     }
@@ -26,8 +26,8 @@ db.serialize(() => {
     // });
 
     // db.run(
-    //     'UPDATE Article SET title = ? WHERE id = ?',
-    //     ["Saint Charbel prophète de l'Amour", 9],
+    //     'UPDATE Website SET logoShort = ? WHERE id = ?',
+    //     ['/ebay-mini.jpeg', 4],
     //     function (err) {
     //         if (err) {
     //             return console.error(err.message);
