@@ -3,6 +3,8 @@ import {
     getCurrentDateFormatted,
     whichColor,
     runAsync,
+    insertPlatforms,
+    tabAvailable,
 } from '../utilities/tools.js';
 
 //GET METHOD
@@ -328,14 +330,14 @@ export const store = (req, res) => {
             result.title,
             result?.description || null,
             parseInt(result.category),
-            parseInt(result.price) * 100,
+            parseInt(result.price),
             result.state,
-            result?.created_at || getCurrentDateFormatted(),
+            getCurrentDateFormatted(),
             result?.sold_at || null,
             parseInt(result?.platform) || null,
         ];
 
-        db.run(sqlArticle, paramsArticle, function (err) {
+        db.run(sqlArticle, paramsArticle, async function (err) {
             if (err) {
                 console.error(err.message);
                 res.status(500).json({
@@ -347,54 +349,102 @@ export const store = (req, res) => {
             let lastId = this.lastID;
 
             if (result.state === 'online') {
-                console.log(lastId);
+                try {
+                    await insertPlatforms(result.link, lastId);
 
-                const platformSplit = result.link.split(';');
-
-                const platformTab = [];
-
-                platformSplit.forEach((item) => {
-                    if (item.includes('vinted')) platformTab.push(1);
-                    else if (item.includes('leboncoin')) platformTab.push(2);
-                    else if (item.includes('rakuten')) platformTab.push(3);
-                    else if (item.includes('ebay')) platformTab.push(4);
-                });
-
-                console.log(platformTab);
-
-                const sqlAvailableOn = `INSERT INTO AvailableOn (articleId, websiteId, link)
-                    VALUES (?, ?, ?)`;
-
-                async function insertPlatforms() {
-                    try {
-                        for (let i = 0; i < platformTab.length; i++) {
-                            await runAsync(sqlAvailableOn, [
-                                lastId,
-                                platformTab[i],
-                                platformSplit[i],
-                            ]);
-                            console.log(
-                                `Article ${lastId} disponible sur la plateforme ${platformTab[i]}`,
-                            );
-                        }
-
-                        return res.status(201).json({
-                            message: 'Insertions terminées',
-                        });
-                    } catch (err) {
-                        console.error(err.message);
-                        res.status(500).json({
-                            error: "Erreur lors d'une insertion",
-                        });
-                    }
+                    res.status(201).json({
+                        message: 'Insertions terminées',
+                    });
+                } catch (err) {
+                    console.error(err.message);
+                    res.status(500).json({
+                        error: "Erreur lors d'une insertion",
+                    });
                 }
-
-                insertPlatforms();
             } else {
                 res.status(201).json({
                     message: 'Article ajouté avec succès',
                     id: lastId,
                 });
+            }
+        });
+    } catch (e) {
+        console.log(e);
+        res.state(500).json({ message: 'erreur lors du post' });
+    }
+};
+
+//PUT METHOD
+
+export const update = (req, res) => {
+    try {
+        const result = req.body;
+        const id = req.params.id;
+        const links = result.link || null;
+
+        const setClause = Object.keys(result)
+            .map((key) => {
+                if (key !== 'link') {
+                    return `${key} = ?`;
+                }
+            })
+            .join(', ');
+
+        let paramsArticle = [
+            result.title,
+            result.description,
+            parseInt(result.category),
+            parseInt(result.price),
+            result.state,
+        ];
+
+        if (result.state === 'stock' || result.state === 'online') {
+            paramsArticle.push(null, null);
+        } else if (result.stat === 'sold') {
+            paramsArticle.push(result.sold_at, parseInt(result.platform));
+        }
+
+        const sqlArticle = `UPDATE Articles SET ${setClause} WHERE id = ?`;
+
+        db.run(sqlArticle, [...paramsArticle, id], function (err) {
+            if (err) {
+                return res
+                    .status(500)
+                    .json({ error: 'Erreur SQL: ' + err.message });
+            }
+
+            if (links !== null) {
+                db.run(
+                    'DELETE FROM AvailableOn WHERE articleId = ?',
+                    [id],
+                    async function (err) {
+                        if (err) {
+                            return console.error(err.message);
+                        }
+                        console.log(`Les liens sont supprimés.`);
+
+                        if (result.state === 'online') {
+                            try {
+                                await insertPlatforms(links, id);
+
+                                res.status(201).json({
+                                    message: 'Insertions terminées',
+                                });
+                            } catch (err) {
+                                console.error(err.message);
+                                res.status(500).json({
+                                    error: "Erreur lors d'une insertion",
+                                });
+                            }
+                        } else {
+                            res.json({
+                                message: 'Article mis à jour avec succès.',
+                            });
+                        }
+                    },
+                );
+            } else {
+                res.json({ message: 'Article mis à jour avec succès.' });
             }
         });
     } catch (e) {

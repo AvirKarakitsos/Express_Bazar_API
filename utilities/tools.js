@@ -46,3 +46,31 @@ export function allAsync(sql, params) {
         });
     });
 }
+
+export function tabAvailable(tab) {
+    const resTab = [];
+
+    tab.forEach((item) => {
+        if (item.includes('vinted')) resTab.push(1);
+        else if (item.includes('leboncoin')) resTab.push(2);
+        else if (item.includes('rakuten')) resTab.push(3);
+        else if (item.includes('ebay')) resTab.push(4);
+    });
+
+    return resTab;
+}
+
+export async function insertPlatforms(links, id) {
+    const sqlAvailableOn = `INSERT INTO AvailableOn (articleId, websiteId, link)
+        VALUES (?, ?, ?)`;
+
+    const platformSplit = links.split(';');
+    const platformTab = tabAvailable(platformSplit);
+
+    for (let i = 0; i < platformTab.length; i++) {
+        await runAsync(sqlAvailableOn, [id, platformTab[i], platformSplit[i]]);
+        console.log(
+            `Article ${id} disponible sur la plateforme ${platformTab[i]}`,
+        );
+    }
+}

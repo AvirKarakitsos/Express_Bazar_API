@@ -4,10 +4,11 @@ import {
     getSoldLastMonth,
     allRecent,
     allFigures,
-    store,
     getArticleByCategory,
     soldByMonth,
     getArticleByWebsite,
+    store,
+    update,
 } from '../controllers/articlesController.js';
 
 const router = express.Router();
@@ -27,5 +28,7 @@ router.get('/all/figures', allFigures);
 router.get('/:state', getArticleByState);
 
 router.post('/', store);
+
+router.put('/:id', update);
 
 export default router;
