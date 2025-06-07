@@ -329,7 +329,7 @@ export const store = (req, res) => {
         const paramsArticle = [
             result.title,
             result?.description || null,
-            parseInt(result.category),
+            parseInt(result.categoryId),
             parseInt(result.price),
             result.state,
             getCurrentDateFormatted(),
@@ -379,22 +379,19 @@ export const store = (req, res) => {
 export const update = (req, res) => {
     try {
         const result = req.body;
-        const id = req.params.id;
+        const id = parseInt(req.params.id);
         const links = result.link || null;
 
         const setClause = Object.keys(result)
-            .map((key) => {
-                if (key !== 'link') {
-                    return `${key} = ?`;
-                }
-            })
+            .filter((key) => !(key === 'id' || key === 'link'))
+            .map((key) => `${key} = ?`)
             .join(', ');
 
         let paramsArticle = [
             result.title,
             result.description,
-            parseInt(result.category),
             parseInt(result.price),
+            parseInt(result.categoryId),
             result.state,
         ];
 
@@ -404,7 +401,10 @@ export const update = (req, res) => {
             paramsArticle.push(result.sold_at, parseInt(result.platform));
         }
 
-        const sqlArticle = `UPDATE Articles SET ${setClause} WHERE id = ?`;
+        const sqlArticle = `UPDATE Article SET ${setClause} WHERE id = ?`;
+
+        console.log(sqlArticle);
+        console.log(paramsArticle);
 
         db.run(sqlArticle, [...paramsArticle, id], function (err) {
             if (err) {
