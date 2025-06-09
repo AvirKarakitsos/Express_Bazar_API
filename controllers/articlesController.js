@@ -36,25 +36,37 @@ export const getArticleByState = (req, res) => {
     const param = req.params.state;
     let sql = null;
 
-    if (param === 'stock' || param === 'online') {
+    if (param === 'stock') {
         sql = `SELECT Article.id, 
-                title AS Titre,
-                description AS Description, 
-                price AS Prix, 
-                Category.name AS Categorie,
-                state AS Etat
+                title,
+                description, 
+                price, 
+                Category.name AS categoryId,
+                state
+                FROM Article
+                JOIN Category ON Article.categoryId = Category.id
+                WHERE state = ?
+                ORDER BY created_at DESC;`;
+    } else if (param === 'online') {
+        sql = `SELECT Article.id, 
+                title,
+                description, 
+                price, 
+                Category.name AS categoryId,
+                state,
+                photos
                 FROM Article
                 JOIN Category ON Article.categoryId = Category.id
                 WHERE state = ?
                 ORDER BY created_at DESC;`;
     } else if (param === 'sold') {
         sql = `SELECT Article.id, 
-                title AS Titre, 
-                price AS Prix, 
-                Category.name AS Categorie,
-                state AS Etat,
-                Website.name AS Site, 
-                sold_at AS Vendu
+                title, 
+                price, 
+                Category.name AS categoryId,
+                state,
+                Website.name AS platform, 
+                sold_at
                 FROM Article
                 JOIN Website ON Article.platform = Website.id
                 JOIN Category ON Article.categoryId = Category.id
