@@ -2,9 +2,7 @@ import db from '../database/connection.js';
 import {
     getCurrentDateFormatted,
     whichColor,
-    runAsync,
     insertPlatforms,
-    tabAvailable,
 } from '../utilities/tools.js';
 
 //GET METHOD
@@ -37,6 +35,7 @@ export const getArticleByWebsite = (req, res) => {
 export const getArticleByState = (req, res) => {
     const param = req.params.state;
     let sql = null;
+
     if (param === 'stock' || param === 'online') {
         sql = `SELECT Article.id, 
                 title AS Titre,
@@ -397,8 +396,8 @@ export const update = (req, res) => {
 
         if (result.state === 'stock' || result.state === 'online') {
             paramsArticle.push(null, null);
-        } else if (result.stat === 'sold') {
-            paramsArticle.push(result.sold_at, parseInt(result.platform));
+        } else if (result.state === 'sold') {
+            paramsArticle.push(parseInt(result.platform), result.sold_at);
         }
 
         const sqlArticle = `UPDATE Article SET ${setClause} WHERE id = ?`;
@@ -451,4 +450,24 @@ export const update = (req, res) => {
         console.log(e);
         res.state(500).json({ message: 'erreur lors du post' });
     }
+};
+
+//DELETE METHOD
+
+export const deleteArticle = (req, res) => {
+    const id = parseInt(req.params.id);
+    db.run('DELETE FROM AvailableOn WHERE articleId = ?', [id], function (err) {
+        if (err) {
+            return console.error(err.message);
+        } else {
+            console.log(this.changes + ' item(s) supprimé(s)');
+            db.run('DELETE FROM Article WHERE id = ?', [id], function (err) {
+                if (err) {
+                    return console.error(err.message);
+                } else {
+                    res.json({ message: 'Article supprimé avec succès.' });
+                }
+            });
+        }
+    });
 };

@@ -52,8 +52,8 @@ export function tabAvailable(tab) {
 
     tab.forEach((item) => {
         if (item.includes('vinted')) resTab.push(1);
-        else if (item.includes('leboncoin')) resTab.push(2);
-        else if (item.includes('rakuten')) resTab.push(3);
+        else if (item.includes('rakuten')) resTab.push(2);
+        else if (item.includes('leboncoin')) resTab.push(3);
         else if (item.includes('ebay')) resTab.push(4);
     });
 

@@ -18,7 +18,7 @@ const db = new sql3.Database(
 db.serialize(() => {
     db.run('PRAGMA foreign_keys = ON');
 
-    // db.run('DELETE FROM Article WHERE id = ?', [34], function (err) {
+    // db.run('DELETE FROM Article WHERE id = ?', [37], function (err) {
     //     if (err) {
     //         return console.error(err.message);
     //     }

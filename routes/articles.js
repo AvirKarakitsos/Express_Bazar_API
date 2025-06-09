@@ -9,6 +9,7 @@ import {
     getArticleByWebsite,
     store,
     update,
+    deleteArticle,
 } from '../controllers/articlesController.js';
 
 const router = express.Router();
@@ -30,5 +31,7 @@ router.get('/:state', getArticleByState);
 router.post('/', store);
 
 router.put('/:id', update);
+
+router.delete('/:id', deleteArticle);
 
 export default router;
