@@ -29,7 +29,7 @@ export function whichColor(value) {
     return color;
 }
 
-export function runAsync(sql, params) {
+function runAsync(sql, params) {
     return new Promise((resolve, reject) => {
         db.run(sql, params, function (err) {
             if (err) return reject(err);
@@ -38,16 +38,7 @@ export function runAsync(sql, params) {
     });
 }
 
-export function allAsync(sql, params) {
-    return new Promise((resolve, reject) => {
-        db.all(sql, params, (err, rows) => {
-            if (err) return reject(err);
-            resolve(rows); // Résout la promesse avec les résultats de la requête
-        });
-    });
-}
-
-export function tabAvailable(tab) {
+function tabAvailable(tab) {
     const resTab = [];
 
     tab.forEach((item) => {

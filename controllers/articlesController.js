@@ -393,16 +393,11 @@ export const update = (req, res) => {
         const id = parseInt(req.params.id);
         const links = result.link || null;
 
-        const setClause = Object.keys(result)
-            .filter((key) => !(key === 'id' || key === 'link'))
-            .map((key) => `${key} = ?`)
-            .join(', ');
-
         let paramsArticle = [
             result.title,
             result.description,
             parseInt(result.price),
-            parseInt(result.categoryId),
+            parseInt(result.categoryId) || null,
             result.state,
         ];
 
@@ -412,7 +407,7 @@ export const update = (req, res) => {
             paramsArticle.push(parseInt(result.platform), result.sold_at);
         }
 
-        const sqlArticle = `UPDATE Article SET ${setClause} WHERE id = ?`;
+        const sqlArticle = `UPDATE Article SET title = ?, description = ?, price = ?, categoryId = ?, state = ?, platform = ?, sold_at = ? WHERE id = ?`;
 
         console.log(sqlArticle);
         console.log(paramsArticle);
