@@ -89,6 +89,25 @@ export const getArticleByState = (req, res, next) => {
     });
 };
 
+export const getArticleByValue = (req, res, next) => {
+    const param = req.params.state;
+    const sql = `
+        SELECT SUM(price) as total_price 
+        FROM Article 
+        WHERE state = ?
+    `;
+
+    // Exécution de la requête
+    db.get(sql, [param], (err, row) => {
+        if (err) {
+            console.error("Erreur lors de l'exécution de la requête:", err);
+            return;
+        }
+
+        res.status(200).json({ result: row });
+    });
+};
+
 export const getSoldLastMonth = (req, res, next) => {
     db.all(
         `SELECT Article.id, price, Website.name AS website_name 

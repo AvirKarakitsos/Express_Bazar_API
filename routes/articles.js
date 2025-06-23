@@ -2,11 +2,12 @@ import express from 'express';
 import {
     getArticleByState,
     getSoldLastMonth,
+    getArticleByCategory,
+    getArticleByWebsite,
+    getArticleByValue,
     allRecent,
     allFigures,
-    getArticleByCategory,
     soldByMonth,
-    getArticleByWebsite,
     store,
     update,
     deleteArticle,
@@ -17,6 +18,8 @@ const router = express.Router();
 router.get('/categories/:state', getArticleByCategory);
 
 router.get('/online/:id', getArticleByWebsite);
+
+router.get('/value/:state', getArticleByValue);
 
 router.get('/sold/recent', getSoldLastMonth);
 
