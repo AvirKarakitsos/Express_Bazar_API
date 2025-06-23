@@ -7,7 +7,7 @@ import {
 
 //GET METHOD
 
-export const getArticleByWebsite = (req, res) => {
+export const getArticleByWebsite = (req, res, next) => {
     const param = parseInt(req.params.id);
     const sql = `SELECT
         AvailableOn.id, 
@@ -20,8 +20,9 @@ export const getArticleByWebsite = (req, res) => {
 
     db.all(sql, [param], (err, rows) => {
         if (err) {
-            console.error(err.message);
-            return;
+            const error = new Error();
+            error.message = err.message;
+            return next(error);
         }
 
         rows.sort((a, b) => {
@@ -32,7 +33,7 @@ export const getArticleByWebsite = (req, res) => {
     });
 };
 
-export const getArticleByState = (req, res) => {
+export const getArticleByState = (req, res, next) => {
     const param = req.params.state;
     let sql = null;
 
@@ -73,19 +74,22 @@ export const getArticleByState = (req, res) => {
                 WHERE state = ?
                 ORDER BY sold_at DESC;`;
     } else {
-        res.status(500).json({ message: 'error url' });
+        const error = new Error();
+        error.message = "Erreur dans l'url";
+        return next(error);
     }
 
     db.all(sql, [param], (err, rows) => {
         if (err) {
-            console.error(err.message);
-            return;
+            const error = new Error();
+            error.message = err.message;
+            return next(error);
         }
         res.status(200).json({ result: rows });
     });
 };
 
-export const getSoldLastMonth = (req, res) => {
+export const getSoldLastMonth = (req, res, next) => {
     db.all(
         `SELECT Article.id, price, Website.name AS website_name 
         FROM Article 
@@ -94,8 +98,9 @@ export const getSoldLastMonth = (req, res) => {
         [],
         (err, rows) => {
             if (err) {
-                console.error(err.message);
-                return;
+                const error = new Error();
+                error.message = err.message;
+                return next(error);
             }
 
             if (rows.length !== 0) {
@@ -154,7 +159,7 @@ export const getSoldLastMonth = (req, res) => {
     );
 };
 
-export const soldByMonth = (req, res) => {
+export const soldByMonth = (req, res, next) => {
     db.all(
         `SELECT Article.id, price, strftime('%m', sold_at) AS month, Website.name AS website_name 
         FROM Article 
@@ -165,8 +170,9 @@ export const soldByMonth = (req, res) => {
         [],
         (err, rows) => {
             if (err) {
-                console.error(err.message);
-                return;
+                const error = new Error();
+                error.message = err.message;
+                return next(error);
             }
 
             // x axis for bar chart
@@ -232,7 +238,7 @@ export const soldByMonth = (req, res) => {
     );
 };
 
-export const allRecent = (req, res) => {
+export const allRecent = (req, res, next) => {
     db.all(
         `SELECT Article.id, 
         title AS Titre, 
@@ -246,8 +252,9 @@ export const allRecent = (req, res) => {
         [],
         (err, rows) => {
             if (err) {
-                console.error(err.message);
-                return;
+                const error = new Error();
+                error.message = err.message;
+                return next(error);
             }
 
             res.status(200).json({ result: rows });
@@ -255,11 +262,12 @@ export const allRecent = (req, res) => {
     );
 };
 
-export const allFigures = (req, res) => {
+export const allFigures = (req, res, next) => {
     db.all('SELECT state, price FROM Article', [], (err, rows) => {
         if (err) {
-            console.error(err.message);
-            return;
+            const error = new Error();
+            error.message = err.message;
+            return next(error);
         }
 
         let sumSold = rows.reduce((acc, curr) => {
@@ -281,7 +289,7 @@ export const allFigures = (req, res) => {
     });
 };
 
-export const getArticleByCategory = (req, res) => {
+export const getArticleByCategory = (req, res, next) => {
     const param = req.params.state;
 
     if (param === 'stock' || param === 'online') {
@@ -294,8 +302,9 @@ export const getArticleByCategory = (req, res) => {
             [param],
             (err, rows) => {
                 if (err) {
-                    console.error(err.message);
-                    return;
+                    const error = new Error();
+                    error.message = err.message;
+                    return next(error);
                 }
 
                 const sortByCategory = rows.reduce((acc, cur) => {
@@ -330,64 +339,58 @@ export const getArticleByCategory = (req, res) => {
 
 //POST METHOD
 
-export const store = (req, res) => {
-    try {
-        const result = req.body;
+export const store = (req, res, next) => {
+    const result = req.body;
 
-        const sqlArticle = `INSERT INTO Article (title, description, categoryId, price, state, created_at, sold_at, platform)
+    const sqlArticle = `INSERT INTO Article (title, description, categoryId, price, state, created_at, sold_at, platform)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
-        const paramsArticle = [
-            result.title,
-            result?.description || null,
-            parseInt(result.categoryId),
-            parseInt(result.price),
-            result.state,
-            getCurrentDateFormatted(),
-            result?.sold_at || null,
-            parseInt(result?.platform) || null,
-        ];
+    const paramsArticle = [
+        result.title,
+        result?.description || null,
+        parseInt(result.categoryId),
+        parseInt(result.price),
+        result.state,
+        getCurrentDateFormatted(),
+        result?.sold_at || null,
+        parseInt(result?.platform) || null,
+    ];
 
-        db.run(sqlArticle, paramsArticle, async function (err) {
-            if (err) {
-                console.error(err.message);
-                res.status(500).json({
-                    error: "Erreur lors de l'insertion",
-                });
-                return;
-            }
+    db.run(sqlArticle, paramsArticle, async function (err) {
+        if (err) {
+            const error = new Error();
+            console.error(err.message);
+            error.message = "Erreur lors de l'ajout de l'article";
+            return next(error);
+        }
 
-            let lastId = this.lastID;
+        let lastId = this.lastID;
 
-            if (result.state === 'online') {
-                try {
-                    await insertPlatforms(result.link, lastId);
+        if (result.state === 'online') {
+            try {
+                await insertPlatforms(result.link, lastId);
 
-                    res.status(201).json({
-                        message: 'Insertions terminées',
-                    });
-                } catch (err) {
-                    console.error(err.message);
-                    res.status(500).json({
-                        error: "Erreur lors d'une insertion",
-                    });
-                }
-            } else {
                 res.status(201).json({
-                    message: 'Article ajouté avec succès',
-                    id: lastId,
+                    message: 'Insertions terminées',
                 });
+            } catch (err) {
+                const error = new Error();
+                console.error(err.message);
+                error.message = "Erreur lors de l'ajout de l'article";
+                return next(error);
             }
-        });
-    } catch (e) {
-        console.log(e);
-        res.state(500).json({ message: 'erreur lors du post' });
-    }
+        } else {
+            res.status(201).json({
+                message: 'Article ajouté avec succès',
+                id: lastId,
+            });
+        }
+    });
 };
 
 //PUT METHOD
 
-export const update = (req, res) => {
+export const update = (req, res, next) => {
     try {
         const result = req.body;
         const id = parseInt(req.params.id);
@@ -409,14 +412,12 @@ export const update = (req, res) => {
 
         const sqlArticle = `UPDATE Article SET title = ?, description = ?, price = ?, categoryId = ?, state = ?, platform = ?, sold_at = ? WHERE id = ?`;
 
-        console.log(sqlArticle);
-        console.log(paramsArticle);
-
         db.run(sqlArticle, [...paramsArticle, id], function (err) {
             if (err) {
-                return res
-                    .status(500)
-                    .json({ error: 'Erreur SQL: ' + err.message });
+                const error = new Error();
+                error.message = "Erreur lors de l'update";
+                console.error(err.message);
+                return next(error);
             }
 
             if (links !== null) {
@@ -425,7 +426,10 @@ export const update = (req, res) => {
                     [id],
                     async function (err) {
                         if (err) {
-                            return console.error(err.message);
+                            const error = new Error();
+                            error.message = 'Erreur lors de la suppression';
+                            console.error(err.message);
+                            return next(error);
                         }
                         console.log(`Les liens sont supprimés.`);
 
@@ -437,40 +441,50 @@ export const update = (req, res) => {
                                     message: 'Insertions terminées',
                                 });
                             } catch (err) {
+                                const error = new Error();
+                                error.message = "Erreur lors d'une insertion";
                                 console.error(err.message);
-                                res.status(500).json({
-                                    error: "Erreur lors d'une insertion",
-                                });
+                                return next(error);
                             }
                         } else {
-                            res.json({
+                            res.status(200).json({
                                 message: 'Article mis à jour avec succès.',
                             });
                         }
                     },
                 );
             } else {
-                res.json({ message: 'Article mis à jour avec succès.' });
+                res.status(200).json({
+                    message: 'Article mis à jour avec succès.',
+                });
             }
         });
     } catch (e) {
-        console.log(e);
-        res.state(500).json({ message: 'erreur lors du post' });
+        const error = new Error();
+        error.message = "Erreur lors de l'update";
+        console.error(err.message);
+        return next(error);
     }
 };
 
 //DELETE METHOD
 
-export const deleteArticle = (req, res) => {
+export const deleteArticle = (req, res, next) => {
     const id = parseInt(req.params.id);
     db.run('DELETE FROM AvailableOn WHERE articleId = ?', [id], function (err) {
         if (err) {
-            return console.error(err.message);
+            const error = new Error();
+            error.message = 'Erreur lors de la suppression';
+            console.error(err.message);
+            return next(error);
         } else {
             console.log(this.changes + ' item(s) supprimé(s)');
             db.run('DELETE FROM Article WHERE id = ?', [id], function (err) {
                 if (err) {
-                    return console.error(err.message);
+                    const error = new Error();
+                    error.message = 'Erreur lors de la suppression';
+                    console.error(err.message);
+                    return next(error);
                 } else {
                     res.json({ message: 'Article supprimé avec succès.' });
                 }
