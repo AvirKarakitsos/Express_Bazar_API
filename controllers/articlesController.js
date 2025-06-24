@@ -104,7 +104,7 @@ export const getArticleByValue = (req, res, next) => {
             return;
         }
 
-        res.status(200).json({ result: row });
+        res.status(200).json({ result: row.total_price });
     });
 };
 
