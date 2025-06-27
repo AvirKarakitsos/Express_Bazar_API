@@ -154,6 +154,7 @@ export const getSoldLastMonth = (req, res, next) => {
                     {
                         data: ['Mois en cours'],
                         barGapRatio: 0.8,
+                        categoryGapRatio: 0.7,
                     },
                 ];
 
