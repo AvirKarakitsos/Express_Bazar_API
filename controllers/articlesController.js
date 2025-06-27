@@ -37,7 +37,17 @@ export const getArticleByState = (req, res, next) => {
     const param = req.params.state;
     let sql = null;
 
-    if (param === 'stock') {
+    if (param === 'all') {
+        sql = `SELECT Article.id, 
+        title, 
+        Category.name AS categoryId, 
+        price, 
+        state 
+        FROM Article 
+        JOIN Category ON Article.categoryId = Category.id
+        ORDER BY Article.id DESC 
+        LIMIT 5`;
+    } else if (param === 'stock') {
         sql = `SELECT Article.id, 
                 title,
                 description, 
@@ -79,7 +89,10 @@ export const getArticleByState = (req, res, next) => {
         return next(error);
     }
 
-    db.all(sql, [param], (err, rows) => {
+    let tableParam = null;
+    param === 'all' ? (tableParam = []) : (tableParam = [param]);
+
+    db.all(sql, tableParam, (err, rows) => {
         if (err) {
             const error = new Error();
             error.message = err.message;
@@ -253,30 +266,6 @@ export const soldByMonth = (req, res, next) => {
             }
 
             res.status(200).json({ x, series });
-        },
-    );
-};
-
-export const allRecent = (req, res, next) => {
-    db.all(
-        `SELECT Article.id, 
-        title AS Titre, 
-        Category.name AS Catégorie, 
-        price AS Prix, 
-        state AS Etat 
-        FROM Article 
-        JOIN Category ON Article.categoryId = Category.id
-        ORDER BY Article.id DESC 
-        LIMIT 5`,
-        [],
-        (err, rows) => {
-            if (err) {
-                const error = new Error();
-                error.message = err.message;
-                return next(error);
-            }
-
-            res.status(200).json({ result: rows });
         },
     );
 };

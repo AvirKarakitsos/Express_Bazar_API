@@ -5,7 +5,6 @@ import {
     getArticleByCategory,
     getArticleByWebsite,
     getArticleByValue,
-    allRecent,
     allFigures,
     soldByMonth,
     store,
@@ -24,8 +23,6 @@ router.get('/value/:state', getArticleByValue);
 router.get('/sold/recent', getSoldLastMonth);
 
 router.get('/sold/monthly', soldByMonth);
-
-router.get('/all/recent', allRecent);
 
 router.get('/all/figures', allFigures);
 
