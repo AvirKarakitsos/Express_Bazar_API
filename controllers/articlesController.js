@@ -10,12 +10,12 @@ import {
 export const getArticleByWebsite = (req, res, next) => {
     const param = parseInt(req.params.id);
     const sql = `SELECT
-        AvailableOn.id, 
-        articleId, 
-        Website.logoShort,
-        link
-        FROM AvailableOn
-        JOIN Website ON AvailableOn.websiteId = Website.id 
+        av.id, 
+        av.articleId, 
+        w.logoShort,
+        av.link
+        FROM AvailableOn av
+        JOIN Website w ON av.websiteId = w.id 
         WHERE articleId = ?`;
 
     db.all(sql, [param], (err, rows) => {
@@ -123,9 +123,9 @@ export const getArticleByValue = (req, res, next) => {
 
 export const getSoldLastMonth = (req, res, next) => {
     db.all(
-        `SELECT Article.id, price, Website.name AS website_name 
-        FROM Article 
-        JOIN Website ON Article.platform = Website.id
+        `SELECT a.id, a.price, w.name AS website_name 
+        FROM Article a
+        JOIN Website w ON a.platform = w.id
         WHERE strftime('%Y-%m', sold_at) = strftime('%Y-%m', '2025-06-01')`, //ATTENTION CHANGEMENT 'now'
         [],
         (err, rows) => {
@@ -194,10 +194,10 @@ export const getSoldLastMonth = (req, res, next) => {
 
 export const soldByMonth = (req, res, next) => {
     db.all(
-        `SELECT Article.id, price, strftime('%m', sold_at) AS month, Website.name AS website_name 
-        FROM Article 
-        JOIN Website ON Article.platform = Website.id
-        WHERE state='sold'
+        `SELECT a.id, a.price, strftime('%m', sold_at) AS month, w.name AS website_name 
+        FROM Article a
+        JOIN Website w ON a.platform = w.id
+        WHERE a.state='sold'
         ORDER BY month ASC
         `,
         [],
@@ -303,10 +303,10 @@ export const getArticleByCategory = (req, res, next) => {
 
     if (param === 'stock' || param === 'online') {
         db.all(
-            `SELECT Category.name AS category_name 
-            FROM Article
-            JOIN Category ON Article.categoryId = Category.id
-            WHERE state = ?
+            `SELECT c.name AS category_name 
+            FROM Article a
+            JOIN Category c ON a.categoryId = c.id
+            WHERE a.state = ?
             ORDER BY category_name `,
             [param],
             (err, rows) => {
