@@ -16,7 +16,7 @@ export const getArticleByWebsite = (req, res, next) => {
         av.link
         FROM AvailableOn av
         JOIN Website w ON av.websiteId = w.id 
-        WHERE articleId = ?`;
+        WHERE av.articleId = ?`;
 
     db.all(sql, [param], (err, rows) => {
         if (err) {
@@ -59,17 +59,32 @@ export const getArticleByState = (req, res, next) => {
                 WHERE state = ?
                 ORDER BY created_at DESC;`;
     } else if (param === 'online') {
-        sql = `SELECT Article.id, 
-                title,
-                description, 
-                price, 
-                Category.name AS categoryId,
-                state,
-                photos
-                FROM Article
-                JOIN Category ON Article.categoryId = Category.id
-                WHERE state = ?
-                ORDER BY created_at DESC;`;
+        // sql = `SELECT Article.id,
+        //         title,
+        //         description,
+        //         price,
+        //         Category.name AS categoryId,
+        //         state,
+        //         photos
+        //         FROM Article
+        //         JOIN Category ON Article.categoryId = Category.id
+        //         WHERE state = ?
+        //         ORDER BY created_at DESC;`;
+        sql = `SELECT 
+            a.id,
+            a.title,
+            a.description,
+            a.price,
+            c.name AS categoryId,
+            a.state,
+            w.id as website_id,
+            w.logoShort as website_logoShort,
+            av.link as website_link
+            FROM Article a
+            JOIN Category c ON a.categoryId = c.id
+            JOIN AvailableOn av ON a.id = av.articleId
+            JOIN Website w ON av.websiteId = w.id
+            WHERE state = ?`;
     } else if (param === 'sold') {
         sql = `SELECT Article.id, 
                 title, 
@@ -98,7 +113,40 @@ export const getArticleByState = (req, res, next) => {
             error.message = err.message;
             return next(error);
         }
-        res.status(200).json({ result: rows });
+
+        if (param === 'online') {
+            const tableArticles = [];
+            const tableId = [];
+
+            rows.forEach((row) => {
+                const articleId = row.id;
+
+                if (!tableId.includes(articleId)) {
+                    tableId.push(articleId);
+                    tableArticles.push({
+                        id: row.id,
+                        title: row.title,
+                        description: row.description,
+                        price: row.price,
+                        categoryId: row.categoryId,
+                        state: row.state,
+                        websites: [],
+                    });
+                }
+
+                tableArticles.map((article) => {
+                    if (article.id === articleId)
+                        article.websites.push({
+                            id: row.website_id,
+                            logoShort: row.website_logoShort,
+                            link: row.website_link,
+                        });
+                });
+            });
+            res.status(200).json({ result: tableArticles });
+        } else {
+            res.status(200).json({ result: rows });
+        }
     });
 };
 
