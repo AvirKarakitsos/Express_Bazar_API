@@ -104,8 +104,10 @@ export const getArticleByState = (req, res, next) => {
                             logoShort: row.website_logoShort,
                             link: row.website_link,
                         });
+                    article.websites.sort((a, b) => a.id - b.id);
                 });
             });
+
             res.status(200).json({ result: tableArticles });
         } else {
             res.status(200).json({ result: rows });
