@@ -3,7 +3,6 @@ import {
     getArticleByState,
     getSoldLastMonth,
     getArticleByCategory,
-    getArticleByWebsite,
     getArticleByValue,
     allFigures,
     soldByMonth,
@@ -15,8 +14,6 @@ import {
 const router = express.Router();
 
 router.get('/categories/:state', getArticleByCategory);
-
-router.get('/online/:id', getArticleByWebsite);
 
 router.get('/value/:state', getArticleByValue);
 

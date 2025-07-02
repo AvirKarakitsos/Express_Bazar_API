@@ -7,69 +7,32 @@ import {
 
 //GET METHOD
 
-export const getArticleByWebsite = (req, res, next) => {
-    const param = parseInt(req.params.id);
-    const sql = `SELECT
-        av.id, 
-        av.articleId, 
-        w.logoShort,
-        av.link
-        FROM AvailableOn av
-        JOIN Website w ON av.websiteId = w.id 
-        WHERE av.articleId = ?`;
-
-    db.all(sql, [param], (err, rows) => {
-        if (err) {
-            const error = new Error();
-            error.message = err.message;
-            return next(error);
-        }
-
-        rows.sort((a, b) => {
-            return a.logoShort.localeCompare(b.logoShort);
-        });
-
-        res.status(200).json({ result: rows });
-    });
-};
-
 export const getArticleByState = (req, res, next) => {
     const param = req.params.state;
     let sql = null;
 
     if (param === 'all') {
         sql = `SELECT Article.id, 
-        title, 
-        Category.name AS categoryId, 
-        price, 
-        state 
-        FROM Article 
-        JOIN Category ON Article.categoryId = Category.id
-        ORDER BY Article.id DESC 
-        LIMIT 5`;
+            title, 
+            Category.name AS categoryId, 
+            price, 
+            state 
+            FROM Article 
+            JOIN Category ON Article.categoryId = Category.id
+            ORDER BY Article.id DESC 
+            LIMIT 5`;
     } else if (param === 'stock') {
         sql = `SELECT Article.id, 
-                title,
-                description, 
-                price, 
-                Category.name AS categoryId,
-                state
-                FROM Article
-                JOIN Category ON Article.categoryId = Category.id
-                WHERE state = ?
-                ORDER BY created_at DESC;`;
+            title,
+            description, 
+            price, 
+            Category.name AS categoryId,
+            state
+            FROM Article
+            JOIN Category ON Article.categoryId = Category.id
+            WHERE state = ?
+            ORDER BY created_at DESC;`;
     } else if (param === 'online') {
-        // sql = `SELECT Article.id,
-        //         title,
-        //         description,
-        //         price,
-        //         Category.name AS categoryId,
-        //         state,
-        //         photos
-        //         FROM Article
-        //         JOIN Category ON Article.categoryId = Category.id
-        //         WHERE state = ?
-        //         ORDER BY created_at DESC;`;
         sql = `SELECT 
             a.id,
             a.title,
@@ -87,17 +50,17 @@ export const getArticleByState = (req, res, next) => {
             WHERE state = ?`;
     } else if (param === 'sold') {
         sql = `SELECT Article.id, 
-                title, 
-                price, 
-                Category.name AS categoryId,
-                state,
-                Website.name AS platform, 
-                sold_at
-                FROM Article
-                JOIN Website ON Article.platform = Website.id
-                JOIN Category ON Article.categoryId = Category.id
-                WHERE state = ?
-                ORDER BY sold_at DESC;`;
+            title, 
+            price, 
+            Category.name AS categoryId,
+            state,
+            Website.name AS platform, 
+            sold_at
+            FROM Article
+            JOIN Website ON Article.platform = Website.id
+            JOIN Category ON Article.categoryId = Category.id
+            WHERE state = ?
+            ORDER BY sold_at DESC;`;
     } else {
         const error = new Error();
         error.message = "Erreur dans l'url";
