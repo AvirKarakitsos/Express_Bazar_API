@@ -11,11 +11,20 @@ export const getArticleOnlineByCategory = (req, res, next) => {
     const param = req.params.id;
 
     db.all(
-        `SELECT a.title, a.description, a.price, a.photos
+        `SELECT
+        a.id,
+        a.title,
+        a.description,
+        a.price,
+        a.photos,
+        w.id as website_id,
+        w.logoShort as website_logoShort,
+        av.link as website_link
         FROM Article a
+        JOIN AvailableOn av ON a.id = av.articleId
+        JOIN Website w ON av.websiteId = w.id
         JOIN Category c ON a.categoryId = c.id
-        WHERE a.state = "online" AND a.categoryId = ?
-        ORDER BY a.categoryId `,
+        WHERE a.state = "online" AND a.categoryId = ?`,
         [param],
         (err, rows) => {
             if (err) {
@@ -24,7 +33,35 @@ export const getArticleOnlineByCategory = (req, res, next) => {
                 return next(error);
             }
 
-            res.status(200).json({ rows });
+            const tableArticles = [];
+            const tableId = [];
+
+            rows.forEach((row) => {
+                const articleId = row.id;
+
+                if (!tableId.includes(articleId)) {
+                    tableId.push(articleId);
+                    tableArticles.push({
+                        id: row.id,
+                        title: row.title,
+                        description: row.description,
+                        price: row.price,
+                        photos: row.photos,
+                        websites: [],
+                    });
+                }
+
+                tableArticles.map((article) => {
+                    if (article.id === articleId)
+                        article.websites.push({
+                            id: row.website_id,
+                            logoShort: row.website_logoShort,
+                            link: row.website_link,
+                        });
+                    article.websites.sort((a, b) => a.id - b.id);
+                });
+            });
+            res.status(200).json({ rows: tableArticles });
         },
     );
 };
