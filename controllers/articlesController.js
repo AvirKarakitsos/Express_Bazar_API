@@ -7,6 +7,28 @@ import {
 
 //GET METHOD
 
+export const getArticleOnlineByCategory = (req, res, next) => {
+    const param = req.params.id;
+
+    db.all(
+        `SELECT a.title, a.description, a.price, a.photos
+        FROM Article a
+        JOIN Category c ON a.categoryId = c.id
+        WHERE a.state = "online" AND a.categoryId = ?
+        ORDER BY a.categoryId `,
+        [param],
+        (err, rows) => {
+            if (err) {
+                const error = new Error();
+                error.message = err.message;
+                return next(error);
+            }
+
+            res.status(200).json({ rows });
+        },
+    );
+};
+
 export const getArticleByState = (req, res, next) => {
     const param = req.params.state;
     let sql = null;

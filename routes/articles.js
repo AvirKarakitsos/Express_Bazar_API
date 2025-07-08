@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+    getArticleOnlineByCategory,
     getArticleByState,
     getSoldLastMonth,
     getArticleByCategory,
@@ -12,6 +13,8 @@ import {
 } from '../controllers/articlesController.js';
 
 const router = express.Router();
+
+router.get('/online/category/:id', getArticleOnlineByCategory);
 
 router.get('/categories/:state', getArticleByCategory);
 
