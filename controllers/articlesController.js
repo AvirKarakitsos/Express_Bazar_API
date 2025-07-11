@@ -99,6 +99,7 @@ export const getArticleByState = (req, res, next) => {
             a.price,
             c.name AS categoryId,
             a.state,
+            a.photos
             w.id as website_id,
             w.logoShort as website_logoShort,
             av.link as website_link
